@@ -139,26 +139,32 @@ Always check the success flag and analyze the screenshot to confirm your action 
 
 Remember: You are an intelligent agent. Use your reasoning to interpret visual information and choose the best tools and approaches for each unique task."""
 
-# Create the model-agnostic agent with LiteLLM support
-root_agent = Agent(
+root_agent = None
 
-    model='openai/gpt-5-mini',  # Change this to your preferred model
-    
-    name='computer_use_agent',
-    
-    description=(
-        'A model-agnostic computer use agent that can operate a browser to complete '
-        'user tasks. Works with any LLM through LiteLLM integration.'
-    ),
-    
-    instruction=COMPUTER_USE_SYSTEM_PROMPT,
-    
-    # Use the model-agnostic toolset instead of Gemini-specific one
-    tools=[ModelAgnosticComputerToolSet(
-        computer=computer_with_profile,
-        virtual_screen_size=(1000, 1000)  # Standard coordinate space for LLMs
-    )],
-)
+try: 
+    # Create the model-agnostic agent with LiteLLM support
+    root_agent = Agent(
+
+        model='openai/gpt-5-mini',  # Change this to your preferred model
+        
+        name='computer_use_agent',
+        
+        description=(
+            'A model-agnostic computer use agent that can operate a browser to complete '
+            'user tasks. Works with any LLM through LiteLLM integration.'
+        ),
+        
+        instruction=COMPUTER_USE_SYSTEM_PROMPT,
+        
+        # Use the model-agnostic toolset instead of Gemini-specific one
+        tools=[ModelAgnosticComputerToolSet(
+            computer=computer_with_profile,
+            virtual_screen_size=(1000, 1000)  # Standard coordinate space for LLMs
+        )],
+    )
+    print(f"✅ Agent '{root_agent.name}' created using model '{root_agent.model}'.")
+except Exception as e:
+    print(f"❌ Could not create {root_agent.name}. Check API Key ({root_agent.model}). Error: {e}")
 
 # Example usage in an async context:
 """
