@@ -1,9 +1,8 @@
 from __future__ import annotations
 
-import base64
 import logging
 from typing import Any, Callable, Optional
-
+from google.genai import types
 from google.adk.agents.readonly_context import ReadonlyContext
 from google.adk.features import experimental, FeatureName
 from google.adk.models.llm_request import LlmRequest
@@ -64,7 +63,7 @@ class ModelAgnosticComputerTool(FunctionTool):
         normalized = int(y / self._coordinate_space[1] * self._screen_size[1])
         return max(0, min(normalized, self._screen_size[1] - 1))
 
-    async def run_async(self, *, args: dict[str, Any], tool_context: ToolContext) -> Any:
+    async def run_async(self, *, args: dict[str, Any], tool_context: ToolContext) -> dict[str, str]:
         """Run the computer control function with normalized coordinates."""
         
         try:
@@ -95,20 +94,24 @@ class ModelAgnosticComputerTool(FunctionTool):
 
             # Process the result if it's a ComputerState
             if isinstance(result, ComputerState):
-                # For model-agnostic usage, return structured data
+                # save screenshot in result as artifact
+                # TODO('check for result.screenshot is bytes')
+                image_part = types.Part.from_bytes(data = result.screenshot, mime_type='image/png')
+                artifact_id = f'computer_screenshot_{tool_context.function_call_id}.png'
+                await tool_context.save_artifact(filename=artifact_id, artifact=image_part)
                 return {
-                    "success": True,
-                    "screenshot_base64": base64.b64encode(result.screenshot).decode("utf-8"),
+                    "status": "success",
+                    "computer_screenshot_artifact_id": artifact_id,
                     "url": result.url,
                     "message": f"Action completed successfully. Current URL: {result.url}"
                 }
-
-            return result
+            else:
+                return result
 
         except Exception as e:
             logger.error("Error in ModelAgnosticComputerTool.run_async: %s", e)
             return {
-                "success": False,
+                "status": "error",
                 "error": str(e),
                 "message": f"Action failed: {str(e)}"
             }
