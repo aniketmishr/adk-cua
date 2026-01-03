@@ -75,9 +75,12 @@ class PlaywrightComputer(BaseComputer):
     self._search_engine_url = search_engine_url
     self._highlight_mouse = highlight_mouse
     self._user_data_dir = user_data_dir
+    self._initialized = False
 
   @override
   async def initialize(self):
+    if self._initialized: 
+      return 
     print("Creating session...")
     self._playwright = await async_playwright().start()
 
@@ -128,7 +131,8 @@ class PlaywrightComputer(BaseComputer):
         color="green",
         attrs=["bold"],
     )
-
+    # set self._initialized to True
+    self._initialized = True
     await self._page.goto(self._initial_url)
     await self._page.wait_for_load_state()
 
@@ -138,15 +142,13 @@ class PlaywrightComputer(BaseComputer):
   
   async def __aenter__(self):
     await self.initialize()
-    await self._page.goto(self._initial_url)
-    await self._page.wait_for_load_state()
     return self
   
   async def __aexit__(self, exc_type, exc, tb): 
     await self.close(exc_type, exc, tb)
 
   @override
-  async def close(self, exc_type, exc_val, exc_tb):
+  async def close(self, exc_type=None, exc_val=None, exc_tb=None):
     if self._context:
       self._context.close()
     try:

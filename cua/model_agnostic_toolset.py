@@ -4,7 +4,6 @@ import logging
 from typing import Any, Callable, Optional
 from google.genai import types
 from google.adk.agents.readonly_context import ReadonlyContext
-from google.adk.features import experimental, FeatureName
 from google.adk.models.llm_request import LlmRequest
 from google.adk.tools.base_toolset import BaseToolset
 from google.adk.tools.function_tool import FunctionTool
@@ -14,7 +13,7 @@ from google.adk.tools.computer_use.base_computer import BaseComputer, ComputerSt
 logger = logging.getLogger("google_adk." + __name__)
 
 # Methods that should be excluded when creating tools from BaseComputer methods
-EXCLUDED_METHODS = {"screen_size", "environment", "close", "initialize"}
+EXCLUDED_METHODS = {"screen_size", "environment", "close", "initialize", "current_state"}
 
 
 class ModelAgnosticComputerTool(FunctionTool):
@@ -117,7 +116,6 @@ class ModelAgnosticComputerTool(FunctionTool):
             }
 
 
-@experimental(FeatureName.COMPUTER_USE)
 class ModelAgnosticComputerToolSet(BaseToolset):
     """A model-agnostic toolset for computer control that works with any LLM via LiteLLM.
     
