@@ -8,6 +8,6 @@ dist/
 wheels/
 *.egg-info
 
-# Virtual environments
 .venv
-cua_agent/
+runs
+omni/som/weights

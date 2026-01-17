@@ -1,15 +1,13 @@
-
 import asyncio
 import time
 from typing import Literal
 from typing import Optional
-
-from google.adk.tools.computer_use.base_computer import BaseComputer
-from google.adk.tools.computer_use.base_computer import ComputerEnvironment
-from google.adk.tools.computer_use.base_computer import ComputerState
-from playwright.async_api import async_playwright
 import termcolor
 from typing_extensions import override
+
+from .base_computer import BaseComputer, ComputerEnvironment, ComputerState
+from playwright.async_api import async_playwright
+from .visual_grounding import locate_visual_element
 
 # Define a mapping from the user-friendly key names to Playwright's expected key names.
 # Playwright is generally good with case-insensitivity for these, but it's best to be canonical.
@@ -168,29 +166,30 @@ class PlaywrightComputer(BaseComputer):
   async def open_web_browser(self) -> ComputerState:
     return await self.current_state()
 
-  async def click_at(self, x: int, y: int):
+  async def click_at(self, visual_description: str):
+    # get coordinates of target element
+    current_state = await self.current_state()
+    x,y = await locate_visual_element(image_bytes= current_state.screenshot,visual_description=visual_description)
     await self.highlight_mouse(x, y)
     await self._page.mouse.click(x, y)
     await self._page.wait_for_load_state()
     return await self.current_state()
 
-  async def hover_at(self, x: int, y: int):
+  async def hover_at(self, visual_description: str):
+    # get coordinates of target element
+    current_state = await self.current_state()
+    x,y = locate_visual_element(image_bytes= current_state.screenshot,visual_description=visual_description)
     await self.highlight_mouse(x, y)
     await self._page.mouse.move(x, y)
     await self._page.wait_for_load_state()
     return await self.current_state()
 
-  async def type_text_at(
+  async def type_text(
       self,
-      x: int,
-      y: int,
       text: str,
       press_enter: bool = True,
       clear_before_typing: bool = True,
   ) -> ComputerState:
-    await self.highlight_mouse(x, y)
-    await self._page.mouse.click(x, y)
-    await self._page.wait_for_load_state()
 
     if clear_before_typing:
       await self.key_combination(["Control", "A"])
@@ -233,11 +232,14 @@ class PlaywrightComputer(BaseComputer):
 
   async def scroll_at(
       self,
-      x: int,
-      y: int,
+      visual_description : str, 
       direction: Literal["up", "down", "left", "right"],
       magnitude: int,
   ) -> ComputerState:
+    
+    # get coordinates of target element
+    current_state = await self.current_state()
+    x,y = await locate_visual_element(image_bytes= current_state.screenshot,visual_description=visual_description)
     await self.highlight_mouse(x, y)
 
     await self._page.mouse.move(x, y)
@@ -297,14 +299,20 @@ class PlaywrightComputer(BaseComputer):
     return await self.current_state()
 
   async def drag_and_drop(
-      self, x: int, y: int, destination_x: int, destination_y: int
+      self,  source_visual_description: str, destination_visual_description: str
   ) -> ComputerState:
+    # get coordinates of source element
+    current_state = await self.current_state()
+    x,y = await locate_visual_element(image_bytes= current_state.screenshot,visual_description=source_visual_description)
+    # get coordinates of destination element
+    current_state = await self.current_state()
+    destination_x,destination_y = await locate_visual_element(image_bytes= current_state.screenshot,visual_description=destination_visual_description)
     await self.highlight_mouse(x, y)
     await self._page.mouse.move(x, y)
     await self._page.wait_for_load_state()
     await self._page.mouse.down()
     await self._page.wait_for_load_state()
-
+    
     await self.highlight_mouse(destination_x, destination_y)
     await self._page.mouse.move(destination_x, destination_y)
     await self._page.wait_for_load_state()

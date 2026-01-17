@@ -7,15 +7,18 @@ async def before_model_modifier(
     callback_context: CallbackContext, llm_request: LlmRequest
 ) -> LlmResponse | None:
     """Modify LLM request to include artifact references for images."""
-    for content in llm_request.contents:
+
+    count = len(llm_request.contents)
+    for idx, content in enumerate(llm_request.contents):
         if not content.parts:
             continue
 
         modified_parts = []
-        for idx, part in enumerate(content.parts):
+        
+        for part in content.parts:
             # Handle function response parts 
             if part.function_response:
-                if part.function_response.name:
+                if part.function_response.name  and (count==idx+1): # for last content check if there is function_resposne
                     processed_parts = await _process_function_response_part(
                         part, callback_context
                     )

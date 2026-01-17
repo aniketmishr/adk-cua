@@ -36,7 +36,7 @@ async def setup_agent_conversation():
     )
     print(f"Session created: App='{APP_NAME}', User='{USER_ID}', Session='{SESSION_ID}'")
     
-    cua_agent, computer_instance = get_agent_and_computer()
+    cua_agent, computer_instance = get_agent_and_computer(litellm_model="openai/gpt-5-mini")
 
     runner = Runner(
         agent = cua_agent,

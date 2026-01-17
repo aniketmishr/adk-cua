@@ -9,5 +9,16 @@ python -m venv .venv
 pip install -r requirements.txt
 ```
 
-To run agent
-`python main.py run cua`
+To run agent (from root of the project):
+1. First start omni server
+    `python -m omni.server`
+2. Run cli
+    `python cli.py`
+
+## License
+
+This project is licensed under the GNU Affero General Public License v3.0 (AGPL-3.0).
+
+It includes code from the `trycua/cua/som` project, which is also licensed under AGPL-3.0.
+The included `trycua/cua/som` source code has been modified for use in this project.
+
