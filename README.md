@@ -1,3 +1,8 @@
+# Computer Use Agent
+
+[Watch the demo video - YouTube Search](https://youtu.be/1FbDgAi7uB8)
+
+[![Watch the video](https://img.youtube.com/vi/1FbDgAi7uB8/hqdefault.jpg)](https://www.youtube.com/watch?v=1FbDgAi7uB8)
 
 
 Setup instruction: 
