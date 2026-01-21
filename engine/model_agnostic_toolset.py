@@ -8,7 +8,7 @@ from google.adk.models.llm_request import LlmRequest
 from google.adk.tools.base_toolset import BaseToolset
 from google.adk.tools.function_tool import FunctionTool
 from google.adk.tools.tool_context import ToolContext
-from .base_computer import BaseComputer, ComputerState
+from computer.base_computer import BaseComputer, ComputerState
 
 logger = logging.getLogger("google_adk." + __name__)
 

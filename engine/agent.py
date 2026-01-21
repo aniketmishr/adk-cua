@@ -5,7 +5,7 @@ from typing import Tuple
 
 from google.adk import Agent
 from google.adk.models.lite_llm import LiteLlm
-from .browser_computer import PlaywrightComputer
+from computer.browser_computer import PlaywrightComputer
 from google.adk.tools.computer_use.base_computer import BaseComputer
 from .model_agnostic_toolset import ModelAgnosticComputerToolSet
 from .model_callbacks import before_model_modifier

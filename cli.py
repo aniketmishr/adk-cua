@@ -10,7 +10,7 @@ from google.adk.sessions import InMemorySessionService
 from google.adk.artifacts import InMemoryArtifactService
 from google.adk.runners import Runner
 from google.genai import types # For creating message Content/Parts
-from cua.agent import get_agent_and_computer
+from engine.agent import get_agent_and_computer
 from utils import _process_agent_event
 import warnings
 # Ignore all warnings

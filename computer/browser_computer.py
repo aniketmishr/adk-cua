@@ -7,7 +7,7 @@ from typing_extensions import override
 
 from .base_computer import BaseComputer, ComputerEnvironment, ComputerState
 from playwright.async_api import async_playwright
-from .visual_grounding import locate_visual_element
+from engine.visual_grounding import locate_visual_element
 
 # Define a mapping from the user-friendly key names to Playwright's expected key names.
 # Playwright is generally good with case-insensitivity for these, but it's best to be canonical.
