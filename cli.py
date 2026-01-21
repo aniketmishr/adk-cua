@@ -48,10 +48,10 @@ async def setup_agent_conversation():
     return session, runner, computer_instance
 
 
-async def call_agent_async(query: str, runner, user_id, session_id): 
+async def call_agent_async(query: str, computer_state: bytes ,runner, user_id, session_id): 
     """Sends a query to the agent and yeilds model response."""
     # Prepare the user's message in ADK format
-    content = types.Content(role='user', parts = [types.Part(text=query)])
+    content = types.Content(role='user', parts = [types.Part(inline_data=types.Blob(mime_type="image/png",data=computer_state)), types.Part(text=query)])
 
     async for event in runner.run_async(user_id=user_id, session_id=session_id, new_message = content): 
         for r in _process_agent_event(event): 
@@ -74,11 +74,12 @@ async def main():
             if task.strip().lower() == '/bye': 
                 runner.close()
                 break
-
+            current_computer_state = await c.current_state()
             console.print(Rule("[bold yellow]Agent Execution[/bold yellow]"))
 
             async for response in call_agent_async(
                 query=task,
+                computer_state = current_computer_state.screenshot,
                 runner=runner,
                 user_id=USER_ID,
                 session_id=SESSION_ID,
