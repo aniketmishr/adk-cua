@@ -28,11 +28,9 @@ class ModelAgnosticComputerTool(FunctionTool):
         *,
         func: Callable[..., Any],
         screen_size: tuple[int, int],
-        virtual_screen_size: tuple[int, int] = (1000, 1000),
     ):
         super().__init__(func=func)
         self._screen_size = screen_size
-        self._coordinate_space = virtual_screen_size
 
         # Validate screen size
         if not isinstance(screen_size, tuple) or len(screen_size) != 2:
@@ -40,54 +38,11 @@ class ModelAgnosticComputerTool(FunctionTool):
         if screen_size[0] <= 0 or screen_size[1] <= 0:
             raise ValueError("screen_size dimensions must be positive")
 
-        # Validate virtual screen size
-        if not isinstance(virtual_screen_size, tuple) or len(virtual_screen_size) != 2:
-            raise ValueError("virtual_screen_size must be a tuple of (width, height)")
-        if virtual_screen_size[0] <= 0 or virtual_screen_size[1] <= 0:
-            raise ValueError("virtual_screen_size dimensions must be positive")
-
-    def _normalize_x(self, x: int) -> int:
-        """Normalize x coordinate from virtual screen space to actual screen width."""
-        if not isinstance(x, (int, float)):
-            raise ValueError(f"x coordinate must be numeric, got {type(x)}")
-        
-        normalized = int(x / self._coordinate_space[0] * self._screen_size[0])
-        return max(0, min(normalized, self._screen_size[0] - 1))
-
-    def _normalize_y(self, y: int) -> int:
-        """Normalize y coordinate from virtual screen space to actual screen height."""
-        if not isinstance(y, (int, float)):
-            raise ValueError(f"y coordinate must be numeric, got {type(y)}")
-        
-        normalized = int(y / self._coordinate_space[1] * self._screen_size[1])
-        return max(0, min(normalized, self._screen_size[1] - 1))
 
     async def run_async(self, *, args: dict[str, Any], tool_context: ToolContext) -> dict[str, str]:
         """Run the computer control function with normalized coordinates."""
         
         try:
-            # Normalize coordinates if present
-            if "x" in args:
-                original_x = args["x"]
-                args["x"] = self._normalize_x(args["x"])
-                logger.debug("Normalized x: %s -> %s", original_x, args["x"])
-
-            if "y" in args:
-                original_y = args["y"]
-                args["y"] = self._normalize_y(args["y"])
-                logger.debug("Normalized y: %s -> %s", original_y, args["y"])
-
-            # Handle destination coordinates for drag and drop
-            if "destination_x" in args:
-                original_dest_x = args["destination_x"]
-                args["destination_x"] = self._normalize_x(args["destination_x"])
-                logger.debug("Normalized destination_x: %s -> %s", original_dest_x, args["destination_x"])
-
-            if "destination_y" in args:
-                original_dest_y = args["destination_y"]
-                args["destination_y"] = self._normalize_y(args["destination_y"])
-                logger.debug("Normalized destination_y: %s -> %s", original_dest_y, args["destination_y"])
-
             # Execute the actual computer control function
             result = await super().run_async(args=args, tool_context=tool_context)
 
@@ -127,17 +82,14 @@ class ModelAgnosticComputerToolSet(BaseToolset):
         self,
         *,
         computer: BaseComputer,
-        virtual_screen_size: tuple[int, int] = (1000, 1000),
     ):
         """Initialize the model-agnostic computer toolset.
         
         Args:
             computer: The BaseComputer instance to control
-            virtual_screen_size: The virtual coordinate space for the LLM (default: 1000x1000)
         """
         super().__init__()
         self._computer = computer
-        self._virtual_screen_size = virtual_screen_size
         self._initialized = False
         self._tools = None
 
@@ -185,7 +137,6 @@ class ModelAgnosticComputerToolSet(BaseToolset):
             ModelAgnosticComputerTool(
                 func=method,
                 screen_size=screen_size,
-                virtual_screen_size=self._virtual_screen_size,
             )
             for method in computer_methods
         ]

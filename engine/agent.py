@@ -15,10 +15,9 @@ from dotenv import load_dotenv
 load_dotenv()
 
 SCREEN_SIZE = (936, 684)
-VIRTUAL_SCREEN_SIZE =  (936, 684) # (1000, 1000)
 
 
-def get_agent_and_computer(litellm_model = 'openai/gpt-5-mini', screen_size = SCREEN_SIZE, virtual_screen_size = VIRTUAL_SCREEN_SIZE) -> Tuple[Agent, BaseComputer]: 
+def get_agent_and_computer(litellm_model = 'openai/gpt-5-mini', screen_size = SCREEN_SIZE) -> Tuple[Agent, BaseComputer]: 
     # Create Computer instance
 
     ## Define user_data_dir path for persistent browser session
@@ -49,13 +48,12 @@ def get_agent_and_computer(litellm_model = 'openai/gpt-5-mini', screen_size = SC
                 'user tasks. Works with any LLM through LiteLLM integration.'
             ),
 
-            instruction=COMPUTER_USE_SYSTEM_PROMPT.format(VIRTUAL_SCREEN_SIZE= VIRTUAL_SCREEN_SIZE),
+            instruction=COMPUTER_USE_SYSTEM_PROMPT,
             
             before_model_callback=before_model_modifier,
 
             tools=[ModelAgnosticComputerToolSet(
                 computer=computer_with_profile,
-                virtual_screen_size=VIRTUAL_SCREEN_SIZE
             )],
         )
         print(f"✅ Agent '{root_agent.name}' created using model '{root_agent.model}'.")
