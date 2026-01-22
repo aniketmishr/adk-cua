@@ -16,11 +16,9 @@ logger = logging.getLogger("google_adk." + __name__)
 EXCLUDED_METHODS = {"screen_size", "environment", "close", "initialize", "current_state"}
 
 
-class ModelAgnosticComputerTool(FunctionTool):
-    """A model-agnostic tool that wraps computer control functions.
-    
-    This tool normalizes coordinates and formats output for any LLM model,
-    not just Gemini's computer use API.
+class ComputerTool(FunctionTool):
+    """
+    A tool that wraps computer control functions.
     """
 
     def __init__(
@@ -40,7 +38,7 @@ class ModelAgnosticComputerTool(FunctionTool):
 
 
     async def run_async(self, *, args: dict[str, Any], tool_context: ToolContext) -> dict[str, str]:
-        """Run the computer control function with normalized coordinates."""
+        """Run the computer control function"""
         
         try:
             # Execute the actual computer control function
@@ -63,7 +61,7 @@ class ModelAgnosticComputerTool(FunctionTool):
                 return result
 
         except Exception as e:
-            logger.error("Error in ModelAgnosticComputerTool.run_async: %s", e)
+            logger.error("Error in ComputerTool.run_async: %s", e)
             return {
                 "status": "error",
                 "error": str(e),
@@ -71,11 +69,9 @@ class ModelAgnosticComputerTool(FunctionTool):
             }
 
 
-class ModelAgnosticComputerToolSet(BaseToolset):
-    """A model-agnostic toolset for computer control that works with any LLM via LiteLLM.
-    
-    Unlike the Gemini-specific ComputerUseToolset, this toolset creates standard
-    function tools that can be used with any model through LiteLLM.
+class ComputerToolSet(BaseToolset):
+    """
+    A toolset for computer control
     """
 
     def __init__(
@@ -83,7 +79,7 @@ class ModelAgnosticComputerToolSet(BaseToolset):
         *,
         computer: BaseComputer,
     ):
-        """Initialize the model-agnostic computer toolset.
+        """Initialize the computer toolset.
         
         Args:
             computer: The BaseComputer instance to control
@@ -102,7 +98,7 @@ class ModelAgnosticComputerToolSet(BaseToolset):
     async def get_tools(
         self,
         readonly_context: Optional[ReadonlyContext] = None,
-    ) -> list[ModelAgnosticComputerTool]:
+    ) -> list[ComputerTool]:
         """Get all computer control tools as standard function tools."""
         
         if self._tools:
@@ -132,16 +128,16 @@ class ModelAgnosticComputerToolSet(BaseToolset):
                 instance_method = getattr(self._computer, method_name)
                 computer_methods.append(instance_method)
         
-        # Create ModelAgnosticComputerTool instances for each method
+        # Create ComputerTool instances for each method
         self._tools = [
-            ModelAgnosticComputerTool(
+            ComputerTool(
                 func=method,
                 screen_size=screen_size,
             )
             for method in computer_methods
         ]
         
-        logger.info(f"Created {len(self._tools)} model-agnostic computer tools")
+        logger.info(f"Created {len(self._tools)} computer tools")
         return self._tools
 
     async def close(self) -> None:
@@ -151,10 +147,9 @@ class ModelAgnosticComputerToolSet(BaseToolset):
     async def process_llm_request(
         self, *, tool_context: ToolContext, llm_request: LlmRequest
     ) -> None:
-        """Add tools to the LLM request in a model-agnostic way.
+        """Add tools to the LLM request.
         
-        This method adds standard function tools that work with any LLM,
-        not just Gemini's computer use API.
+        This method adds standard function tools that work with any LLM.
         """
         try:
             # Ensure tools are created
@@ -164,10 +159,10 @@ class ModelAgnosticComputerToolSet(BaseToolset):
             # Add each tool to the tools dictionary
             for tool in self._tools:
                 llm_request.tools_dict[tool.name] = tool
-                logger.debug(f"Added model-agnostic tool: {tool.name}")
+                logger.debug(f"Added tool: {tool.name}")
             
-            logger.info(f"Added {len(self._tools)} tools to LLM request for model-agnostic usage")
+            logger.info(f"Added {len(self._tools)} tools to LLM request for tool usage")
             
         except Exception as e:
-            logger.error("Error in ModelAgnosticComputerToolSet.process_llm_request: %s", e)
+            logger.error("Error in ComputerToolSet.process_llm_request: %s", e)
             raise

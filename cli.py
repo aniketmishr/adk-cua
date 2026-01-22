@@ -5,7 +5,6 @@ from rich.panel import Panel
 from rich.text import Text
 from rich.markdown import Markdown
 from rich.rule import Rule
-
 from google.adk.sessions import InMemorySessionService
 from google.adk.artifacts import InMemoryArtifactService
 from google.adk.runners import Runner
@@ -72,7 +71,7 @@ async def main():
             console.print("[dim]Type /bye to exit conversation[/dim]")
             task: str = console.input("[bold green][user] >>> [/bold green]")
             if task.strip().lower() == '/bye': 
-                runner.close()
+                await runner.close()
                 break
             current_computer_state = await c.current_state()
             console.print(Rule("[bold yellow]Agent Execution[/bold yellow]"))

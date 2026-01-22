@@ -6,8 +6,8 @@ from typing import Tuple
 from google.adk import Agent
 from google.adk.models.lite_llm import LiteLlm
 from computer.browser_computer import PlaywrightComputer
-from google.adk.tools.computer_use.base_computer import BaseComputer
-from .model_agnostic_toolset import ModelAgnosticComputerToolSet
+from computer.base_computer import BaseComputer
+from .toolset import ComputerToolSet
 from .model_callbacks import before_model_modifier
 from .prompt import COMPUTER_USE_SYSTEM_PROMPT
 from dotenv import load_dotenv
@@ -36,7 +36,7 @@ def get_agent_and_computer(litellm_model = 'openai/gpt-5-mini', screen_size = SC
     root_agent = None
 
     try: 
-        # Create the model-agnostic agent with LiteLLM support
+        # Create the computer agent with LiteLLM support
         root_agent = Agent(
 
             model=LiteLlm(litellm_model), 
@@ -44,15 +44,15 @@ def get_agent_and_computer(litellm_model = 'openai/gpt-5-mini', screen_size = SC
             name='computer_use_agent',
             
             description=(
-                'A model-agnostic computer use agent that can operate a browser to complete '
-                'user tasks. Works with any LLM through LiteLLM integration.'
+                'A computer use agent that can operate a browser to complete '
+                'user tasks. Works with any LLM.'
             ),
 
             instruction=COMPUTER_USE_SYSTEM_PROMPT,
             
             before_model_callback=before_model_modifier,
 
-            tools=[ModelAgnosticComputerToolSet(
+            tools=[ComputerToolSet(
                 computer=computer_with_profile,
             )],
         )

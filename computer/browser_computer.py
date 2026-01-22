@@ -148,9 +148,9 @@ class PlaywrightComputer(BaseComputer):
   @override
   async def close(self, exc_type=None, exc_val=None, exc_tb=None):
     if self._context:
-      self._context.close()
+      await self._context.close()
     try:
-      self._browser.close()
+      await self._browser.close()
     except Exception as e:
       # Browser was already shut down because of SIGINT or such.
       if (
@@ -161,7 +161,7 @@ class PlaywrightComputer(BaseComputer):
       else:
         raise
 
-    self._playwright.stop()
+    await self._playwright.stop()
 
   async def open_web_browser(self) -> ComputerState:
     return await self.current_state()

@@ -64,6 +64,3 @@ When the model decides to use **any tool**, it **must follow this exact two-step
 
 Remember: You are an intelligent agent. Use your reasoning to interpret visual information and choose the best tools and approaches for each unique task."""
 
-if __name__ == '__main__': 
-    from .agent import VIRTUAL_SCREEN_SIZE
-    print(COMPUTER_USE_SYSTEM_PROMPT.format(VIRTUAL_SCREEN_SIZE= VIRTUAL_SCREEN_SIZE))
