@@ -11,8 +11,11 @@ from .toolset import ComputerToolSet
 from .model_callbacks import before_model_modifier
 from .prompt import COMPUTER_USE_SYSTEM_PROMPT
 from dotenv import load_dotenv
+from pathlib import Path
 from custom_opik_tracer import CustomOpikTracer
-load_dotenv()
+
+env_path = Path(__file__).resolve().parent / ".env"
+load_dotenv(dotenv_path=env_path)
 
 SCREEN_SIZE = (936, 684)
 
@@ -25,7 +28,7 @@ opik_tracer = CustomOpikTracer(
         "framework": "google-adk",
         "version": "1"
     },
-    project_name="adk-cua"
+    project_name=os.getenv("OPIK_PROJECT_NAME")
 )
 
 def get_agent_and_computer(litellm_model = 'openai/gpt-5-mini', screen_size = SCREEN_SIZE) -> Tuple[Agent, BaseComputer]: 
