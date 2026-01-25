@@ -2,6 +2,7 @@ import asyncio
 import httpx
 import base64
 from typing import Tuple, List
+from opik import track , opik_context
 
 API_URL = "http://127.0.0.1:8000/parse/"
 
@@ -20,6 +21,7 @@ class UIParsingError(Exception):
     """Raised when UI parsing or response validation fails."""
 
 
+@track(name="omniparser",ignore_arguments=["img_bytes"])
 async def parse_ui_from_image_bytes(img_bytes: bytes) -> Tuple[str, List[dict]]:
     """
     Parse UI elements from image bytes and return an annotated image (base64)
@@ -29,6 +31,10 @@ async def parse_ui_from_image_bytes(img_bytes: bytes) -> Tuple[str, List[dict]]:
         raise ValueError("img_bytes must not be empty")
 
     img_b64 = image_bytes_to_base64(img_bytes)
+        
+    opik_context.update_current_span(
+        input = {"image_b64" : img_b64}
+    )
 
     payload = {
         "base64_image": img_b64
@@ -52,7 +58,7 @@ async def parse_ui_from_image_bytes(img_bytes: bytes) -> Tuple[str, List[dict]]:
     except ValueError as exc:
         raise UIParsingError("Response is not valid JSON") from exc
 
-    annotated_image_b64 = data.get("som_image_base64")
+    annotated_image_b64 = f"data:image/png;base64,"+data.get("som_image_base64")
     ui_elements = data.get("parsed_content_list")
 
     if not annotated_image_b64:

@@ -4,6 +4,8 @@ import litellm
 from typing import Tuple
 from omni.client import parse_ui_from_image_bytes
 from dotenv import load_dotenv
+from opik import track, opik_context
+from utils import png_bytes_to_data_uri
 
 load_dotenv()
 
@@ -43,6 +45,7 @@ class VisualGroundingError(Exception):
     """Raised when visual grounding fails or returns invalid output."""
 
 
+@track(ignore_arguments=["image_bytes"])
 async def locate_visual_element(
     image_bytes: bytes,
     visual_description: str,
@@ -51,6 +54,9 @@ async def locate_visual_element(
     Resolve the screen coordinates of a visually described UI element
     by grounding a natural-language visual description against the UI image.
     """
+    opik_context.update_current_span(
+        input = {"image_base64": png_bytes_to_data_uri(image_bytes)}, 
+    )
     if not image_bytes:
         raise ValueError("image_bytes must not be empty")
 
@@ -69,35 +75,7 @@ async def locate_visual_element(
 
     # Call grounding model via LiteLLM
     try:
-        response = await litellm.acompletion(
-            model=MODEL,
-            messages=[
-                {
-                    "role": "system",
-                    "content": GROUNDING_SYSTEM_PROMPT,
-                },
-                {
-                    "role": "user",
-                    "content": [
-                        {
-                            "type": "image_url",
-                            "image_url": {
-                                "url" : f"data:image/png;base64,{annotated_image_b64}",
-                            }
-                        },
-                        {
-                            "type": "text",
-                            "text": (
-                                "UI ELEMENTS:\n"
-                                f"{ui_elements}\n\n"
-                                "INSTRUCTION:\n"
-                                f"Target visual description: {visual_description}"
-                            ),
-                        },
-                    ],
-                },
-            ],
-        )
+        response = await call_grounding_model(annotated_image_b64, ui_elements, visual_description)
     except Exception as exc:
         print(exc)
         raise VisualGroundingError(
@@ -138,3 +116,43 @@ async def locate_visual_element(
 
     return float(center[0]), float(center[1])
 
+@track
+async def call_grounding_model(annotated_image_b64:str, ui_elements:list[dict], visual_description:str):
+    response = await litellm.acompletion(
+            model=MODEL,
+            messages=[
+                {
+                    "role": "system",
+                    "content": GROUNDING_SYSTEM_PROMPT,
+                },
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "image_url",
+                            "image_url": {
+                                "url" : annotated_image_b64,
+                            }
+                        },
+                        {
+                            "type": "text",
+                            "text": (
+                                "UI ELEMENTS:\n"
+                                f"{ui_elements}\n\n"
+                                "INSTRUCTION:\n"
+                                f"Target visual description: {visual_description}"
+                            ),
+                        },
+                    ],
+                },
+            ],
+        )
+    
+    cost = litellm.completion_cost(
+        completion_response=response
+    )
+    opik_context.update_current_span(
+        total_cost=cost,
+        model = MODEL
+    )
+    return response

@@ -3,6 +3,7 @@ from google.genai.types import Part
 from google.adk.events import Event
 from pydantic import BaseModel, Field
 import json
+import base64
 
 class AgentResponse(BaseModel): 
      reasoning : Optional[str] = Field(
@@ -48,3 +49,20 @@ def _process_agent_event(event: Event) -> List[AgentResponse]:
 
      return responses
 
+def png_bytes_to_data_uri(png_bytes):
+    """
+    Converts PNG image bytes to a base64-encoded string with a data URI.
+
+    Args:
+        png_bytes: The bytes of the PNG image.
+
+    Returns:
+        A string containing the data URI (e.g., "data:image/png;base64,...").
+    """
+    # Base64 encode the bytes
+    encoded_bytes = base64.b64encode(png_bytes)
+    # Convert the encoded bytes to a string
+    encoded_string = encoded_bytes.decode('utf-8')
+    # Format as a data URI
+    data_uri = f"data:image/png;base64,{encoded_string}"
+    return data_uri
