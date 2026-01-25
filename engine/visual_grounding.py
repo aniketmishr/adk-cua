@@ -77,7 +77,6 @@ async def locate_visual_element(
     try:
         response = await call_grounding_model(annotated_image_b64, ui_elements, visual_description)
     except Exception as exc:
-        print(exc)
         raise VisualGroundingError(
             "Visual grounding model call failed via LiteLLM"
         ) from exc

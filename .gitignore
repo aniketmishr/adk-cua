@@ -3,6 +3,7 @@ __pycache__/
 *.py[oc]
 *.adk
 *.env
+*.log
 build/
 dist/
 wheels/

@@ -11,12 +11,29 @@ from google.adk.runners import Runner
 from google.genai import types # For creating message Content/Parts
 from engine.agent import get_agent_and_computer
 from utils import _process_agent_event
+import logging, sys
 import warnings
 # Ignore all warnings
 warnings.filterwarnings("ignore")
 
-import logging
-logging.basicConfig(level=logging.ERROR)
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG) 
+
+console_handler = logging.StreamHandler(sys.stdout)
+console_handler.setLevel(logging.ERROR)
+
+file_handler = logging.FileHandler('app.log', mode='a')
+file_handler.setLevel(logging.DEBUG) 
+
+console_format = logging.Formatter('%(levelname)s: %(message)s')
+file_format = logging.Formatter("%(asctime)s | %(levelname)s | %(name)s | %(message)s")
+
+console_handler.setFormatter(console_format)
+file_handler.setFormatter(file_format)
+
+logger.addHandler(console_handler)
+logger.addHandler(file_handler)
 
 console = Console()
 
@@ -33,7 +50,7 @@ async def setup_agent_conversation():
         user_id=USER_ID, 
         session_id=SESSION_ID
     )
-    print(f"Session created: App='{APP_NAME}', User='{USER_ID}', Session='{SESSION_ID}'")
+    logger.info(f"Session created: App='{APP_NAME}', User='{USER_ID}', Session='{SESSION_ID}'")
     
     cua_agent, computer_instance = get_agent_and_computer(litellm_model="openai/gpt-5-mini")
 
@@ -43,7 +60,7 @@ async def setup_agent_conversation():
         session_service=session_service, 
         artifact_service=artifact_service
     )
-    print(f"Runner created for agent '{runner.agent.name}'.")
+    logger.info(f"Runner created for agent '{runner.agent.name}'.")
     return session, runner, computer_instance
 
 

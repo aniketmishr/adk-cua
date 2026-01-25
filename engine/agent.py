@@ -2,7 +2,7 @@
 import os
 import tempfile
 from typing import Tuple
-
+import logging
 from google.adk import Agent
 from google.adk.models.lite_llm import LiteLlm
 from computer.browser_computer import PlaywrightComputer
@@ -13,6 +13,8 @@ from .prompt import COMPUTER_USE_SYSTEM_PROMPT
 from dotenv import load_dotenv
 from pathlib import Path
 from custom_opik_tracer import CustomOpikTracer
+
+logger = logging.getLogger(__name__)
 
 env_path = Path(__file__).resolve().parent / ".env"
 load_dotenv(dotenv_path=env_path)
@@ -75,9 +77,9 @@ def get_agent_and_computer(litellm_model = 'openai/gpt-5-mini', screen_size = SC
                 computer=computer_with_profile,
             )],
         )
-        print(f"✅ Agent '{root_agent.name}' created using model '{root_agent.model}'.")
+        logger.info(f"Agent '{root_agent.name}' created using model '{root_agent.model}'.")
     except Exception as e:
-        raise ValueError(f"❌ Could not create {root_agent.name}. Check API Key ({root_agent.model}). Error: {e}")
+        logger.exception(f"Could not create {root_agent.name}. Check API Key ({root_agent.model})")
 
     return (root_agent, computer_with_profile)
         

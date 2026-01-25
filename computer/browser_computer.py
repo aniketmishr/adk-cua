@@ -4,10 +4,12 @@ from typing import Literal
 from typing import Optional
 import termcolor
 from typing_extensions import override
-
+import logging
 from .base_computer import BaseComputer, ComputerEnvironment, ComputerState
 from playwright.async_api import async_playwright
 from engine.visual_grounding import locate_visual_element
+
+logger = logging.getLogger(__name__)
 
 # Define a mapping from the user-friendly key names to Playwright's expected key names.
 # Playwright is generally good with case-insensitivity for these, but it's best to be canonical.
@@ -79,7 +81,7 @@ class PlaywrightComputer(BaseComputer):
   async def initialize(self):
     if self._initialized: 
       return 
-    print("Creating session...")
+    logger.info("Creating Playwright session")
     self._playwright = await async_playwright().start()
 
     # Define common arguments for both launch types
@@ -89,10 +91,8 @@ class PlaywrightComputer(BaseComputer):
     ]
 
     if self._user_data_dir:
-      termcolor.cprint(
-          f"Starting playwright with persistent profile: {self._user_data_dir}",
-          color="yellow",
-          attrs=["bold"],
+      logger.info(
+          f"Starting playwright with persistent profile: {self._user_data_dir}"
       )
       # Use a persistent context if user_data_dir is provided
       self._context = await self._playwright.chromium.launch_persistent_context(
@@ -102,10 +102,8 @@ class PlaywrightComputer(BaseComputer):
       )
       self._browser = self._context.browser
     else:
-      termcolor.cprint(
-          "Starting playwright with a temporary profile.",
-          color="yellow",
-          attrs=["bold"],
+      logger.info(
+          "Starting playwright with a temporary profile."
       )
       # Launch a temporary browser instance if user_data_dir is not provided
       self._browser = await self._playwright.chromium.launch(
