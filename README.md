@@ -1,9 +1,13 @@
 # Computer Use Agent
 
-[Watch the demo video - YouTube Search](https://youtu.be/1FbDgAi7uB8)
+# Demo
+> Agent Opens Youtube Video from a playlist of Andrej Karpathy 
 
-[![Watch the video](https://img.youtube.com/vi/1FbDgAi7uB8/hqdefault.jpg)](https://www.youtube.com/watch?v=1FbDgAi7uB8)
+https://github.com/user-attachments/assets/e5dabc81-ffac-4c12-bd7c-db7dbbb96dfb
 
+> Agent uploads a reel to instagram account of user
+
+https://github.com/user-attachments/assets/7f931bda-307b-47da-ae9f-4658ea55933f
 
 Setup instruction: 
 create new file `.env` in folder `cua/` refer `cua/.env.example` paste your API key's
