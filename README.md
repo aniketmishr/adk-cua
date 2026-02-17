@@ -14,11 +14,15 @@ To understand **how the CUA works internally**, including its components and exe
 ## Demo
 
 ### Agent opens a YouTube video from an Andrej Karpathy playlist
-https://github.com/user-attachments/assets/e5dabc81-ffac-4c12-bd7c-db7dbbb96dfb
 
+https://github.com/user-attachments/assets/159e06a9-0910-43ae-b979-0e3513512241
+
+
+
+<!--
 ### Agent uploads a reel to a user’s Instagram account
 https://github.com/user-attachments/assets/7f931bda-307b-47da-ae9f-4658ea55933f
-
+-->
 ---
 
 ## Setup Instructions
