@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Computer Use Agent</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <!-- Left Panel: Chat -->
+    <div class="panel chat-panel">
+      <div class="header">
+        <h2>Agent Chat</h2>
+        <button id="reset-btn" class="reset-btn">Reset Session</button>
+      </div>
+      <div id="chat-messages" class="messages">
+        <div class="welcome-message">
+          <h3>👋 Welcome to Computer Use Agent</h3>
+          <p>Enter a task below to control the browser automatically.</p>
+          <p class="example">Example: "Open Google and search for Python tutorials"</p>
+        </div>
+      </div>
+      <div class="input-area">
+        <input 
+          type="text" 
+          id="task-input" 
+          placeholder="Enter task for agent..."
+          autocomplete="off"
+        >
+        <button id="send-btn">Send</button>
+      </div>
+    </div>
+
+    <!-- Right Panel: Browser Stream -->
+    <div class="panel vnc-panel">
+      <div class="header">
+        <h2>Live Browser</h2>
+        <button id="control-toggle">Take Control</button>
+      </div>
+      <iframe 
+        id="vnc-frame" 
+        title="Browser Stream"
+        allow="clipboard-read; clipboard-write"
+      ></iframe>
+    </div>
+  </div>
+
+  <script src="novnc-control.js"></script>
+  <script src="app.js"></script>
+  <script>
+    // Initialize components
+    const vnc = new VNCController('vnc-frame');
+    const chat = new AgentChat();
+
+    // Auto-connect VNC on page load
+    window.addEventListener('load', () => {
+      vnc.autoConnect();
+    });
+
+    // Control toggle button
+    document.getElementById('control-toggle').addEventListener('click', (e) => {
+      e.target.textContent = vnc.toggleControl();
+    });
+
+    // Send message button
+    document.getElementById('send-btn').addEventListener('click', () => {
+      const input = document.getElementById('task-input');
+      if (input.value.trim()) {
+        chat.sendTask(input.value);
+        input.value = '';
+      }
+    });
+
+    // Enter key to send
+    document.getElementById('task-input').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        document.getElementById('send-btn').click();
+      }
+    });
+
+    // Reset session button
+    document.getElementById('reset-btn').addEventListener('click', () => {
+      chat.resetSession();
+    });
+  </script>
+</body>
+</html>
