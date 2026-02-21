@@ -1,0 +1,63 @@
+version: '3.8'
+
+services:
+  # Your main backend service
+  backend:
+    image: "aniketmishr/cua-backend"
+    ports:
+      - "8000:8000"  # External access
+    environment:
+      # Service endpoints (using Docker service names)
+      SERVICE_PLAYWRIGHT_URL: ws://playwright:37367/default
+      SERVICE_OMNIPARSER_URL: http://omniparser:5000/parse
+    
+      # LLM configs
+      ORCHESTRATOR_PROVIDER: ${ORCHESTRATOR_PROVIDER}
+      ORCHESTRATOR_MODEL: ${ORCHESTRATOR_MODEL}
+      ORCHESTRATOR_API_KEY: ${ORCHESTRATOR_API_KEY}
+      
+      GROUNDING_PROVIDER: ${GROUNDING_PROVIDER}
+      GROUNDING_MODEL: ${GROUNDING_MODEL}
+      GROUNDING_API_KEY: ${GROUNDING_API_KEY}
+      
+      OPIK_API_KEY: ${OPIK_API_KEY}
+      OPIK_PROJECT_NAME: ${OPIK_PROJECT_NAME}
+    depends_on:
+      playwright:
+        condition: service_healthy
+      omniparser:
+        condition: service_healthy
+    networks:
+      - microservices
+
+  playwright:
+    image: "aniketmishr/browser-docker"
+    ports:
+      - "6080:6080"  # noVNC web interface
+    healthcheck:
+      test:  ["CMD", "bash", "-c", "echo > /dev/tcp/localhost/37367"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - microservices
+
+  omniparser:
+    image: "aniketmishr/omniparser"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - microservices
+
+networks:
+  microservices:
+    driver: bridge
+
+## some task you can do 
+# 1. Ensure images have curl installed, else healtcheck will always fail
+# 2. Create fastapi endpoint health for services
+# 3. Connect port of playwright for streaming
+# 4. Check how to run this file with env. variables injected. 

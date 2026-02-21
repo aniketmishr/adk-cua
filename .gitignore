@@ -11,4 +11,4 @@ wheels/
 
 .venv
 runs
-omni/som/weights
+omniparser/som/weights
