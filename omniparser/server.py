@@ -1,14 +1,14 @@
 """
-Omni server entry point.
+Omniparser server entry point.
 
-This module starts the Omni API server.
+This module starts the Omniparser API server.
 To run locally from the project root:
-    python -m omni.server
+    python -m omniparser.server
 """
 
 from typing import List, Tuple
-from .som.models import UIElement, BoundingBox
-from .som import OmniParser
+from som.models import UIElement, BoundingBox
+from som import OmniParser
 from pydantic import BaseModel
 from fastapi import FastAPI
 import time
@@ -53,13 +53,13 @@ def process_image_elements(elements: List[UIElement], screen_size) :
 
 app = FastAPI()
 
-# initialize omni parser
+# initialize omniparser
 parser = OmniParser()
 
 class ParseRequest(BaseModel):
     base64_image: str
 
-@app.post("/parse/")
+@app.post("/parse")
 async def parse(parse_request: ParseRequest):
     print('start parsing...')
     start = time.time()
@@ -73,5 +73,6 @@ async def parse(parse_request: ParseRequest):
 async def root():
     return {"message": "Omniparser API ready"}
 
-if __name__ == "__main__":
-    uvicorn.run("omni.server:app", reload=True)
+@app.get("/health")
+async def health():
+    return {"status": "ok"}

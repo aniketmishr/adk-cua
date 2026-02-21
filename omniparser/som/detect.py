@@ -160,6 +160,7 @@ class OmniParser:
             cache_dir: Optional directory to cache model files
             force_device: Force specific device (cpu/cuda/mps)
         """
+        # TODO(Load model's in the init itself, call DetectionProcessor.load_model and OCRProcessor._ensure_ready in init)
         self.detector = DetectionProcessor(
             model_path=Path(model_path) if model_path else None,
             cache_dir=Path(cache_dir) if cache_dir else None,

@@ -1,0 +1,25 @@
+
+# Optimized requirements for Omniparser (CPU-only)
+
+# PyTorch CPU-only (much smaller than GPU version)
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch==2.2.1+cpu
+torchvision==0.17.1+cpu
+
+# Core dependencies
+ultralytics>=8.1.28
+easyocr>=1.7.1
+numpy==1.26.4
+pillow>=10.2.0
+opencv-python-headless>=4.11.0.86
+matplotlib>=3.8.3
+huggingface-hub>=0.21.4
+supervision>=0.25.1
+
+# Utility
+typing-extensions>=4.9.0
+pydantic>=2.6.3
+
+# FastAPI
+fastapi[standard]
+uvicorn[standard]
