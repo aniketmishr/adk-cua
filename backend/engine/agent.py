@@ -1,6 +1,5 @@
 
 import os
-import tempfile
 from typing import Tuple
 import logging
 from google.adk import Agent
@@ -10,16 +9,13 @@ from computer.base_computer import BaseComputer
 from .toolset import ComputerToolSet
 from .model_callbacks import before_model_modifier
 from .prompt import COMPUTER_USE_SYSTEM_PROMPT
-from dotenv import load_dotenv
-from pathlib import Path
 from custom_opik_tracer import CustomOpikTracer
+from config import settings
 
 logger = logging.getLogger(__name__)
 
-env_path = Path(__file__).resolve().parent / ".env"
-load_dotenv(dotenv_path=env_path)
 
-SCREEN_SIZE = (936, 684)
+SCREEN_SIZE = (1440,900)
 
 # Configure Opik tracer
 opik_tracer = CustomOpikTracer(
@@ -30,21 +26,14 @@ opik_tracer = CustomOpikTracer(
         "framework": "google-adk",
         "version": "1"
     },
-    project_name=os.getenv("OPIK_PROJECT_NAME")
+    project_name=settings.opik.project_name
 )
 
-def get_agent_and_computer(litellm_model = 'openai/gpt-5-mini', screen_size = SCREEN_SIZE) -> Tuple[Agent, BaseComputer]: 
+def get_agent_and_computer() -> Tuple[Agent, BaseComputer]: 
     # Create Computer instance
 
-    ## Define user_data_dir path for persistent browser session
-    profile_name = 'browser_profile_for_adk'
-    profile_path = os.path.join(tempfile.gettempdir(), profile_name)
-    os.makedirs(profile_path, exist_ok=True)
-
-    ## Initialize the Playwright computer instance
-    computer_with_profile = PlaywrightComputer(
+    playwright_computer = PlaywrightComputer(
         screen_size=SCREEN_SIZE,
-        user_data_dir=profile_path,
         highlight_mouse=True,  # Visual feedback for debugging
         )
     
@@ -55,7 +44,10 @@ def get_agent_and_computer(litellm_model = 'openai/gpt-5-mini', screen_size = SC
         # Create the computer agent with LiteLLM support
         root_agent = Agent(
 
-            model=LiteLlm(litellm_model), 
+            model=LiteLlm(
+                model = settings.orchestrator.model, 
+                api_key = settings.orchestrator.api_key.get_secret_value()
+            ), 
             
             name='computer_use_agent',
             
@@ -74,14 +66,14 @@ def get_agent_and_computer(litellm_model = 'openai/gpt-5-mini', screen_size = SC
             after_tool_callback=opik_tracer.after_tool_callback,
 
             tools=[ComputerToolSet(
-                computer=computer_with_profile,
+                computer=playwright_computer,
             )],
         )
         logger.info(f"Agent '{root_agent.name}' created using model '{root_agent.model}'.")
     except Exception as e:
         logger.exception(f"Could not create {root_agent.name}. Check API Key ({root_agent.model})")
 
-    return (root_agent, computer_with_profile)
+    return (root_agent, playwright_computer)
         
 
 root_agent, playwright_computer = get_agent_and_computer()

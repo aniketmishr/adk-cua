@@ -3,8 +3,9 @@ import httpx
 import base64
 from typing import Tuple, List
 from opik import track , opik_context
+from config import settings
 
-API_URL = "http://127.0.0.1:8000/parse/"
+API_URL = settings.services.omniparser_url
 
 
 def image_bytes_to_base64(image_bytes: bytes) -> str:

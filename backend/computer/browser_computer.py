@@ -8,6 +8,7 @@ import logging
 from .base_computer import BaseComputer, ComputerEnvironment, ComputerState
 from playwright.async_api import async_playwright
 from engine.visual_grounding import locate_visual_element
+from config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -68,69 +69,55 @@ class PlaywrightComputer(BaseComputer):
       initial_url: str = "https://www.google.com",
       search_engine_url: str = "https://www.google.com",
       highlight_mouse: bool = False,
-      user_data_dir: Optional[str] = None,
+      remote_ws_endpoint: str = settings.services.playwright_url,
   ):
     self._initial_url = initial_url
     self._screen_size = screen_size
     self._search_engine_url = search_engine_url
     self._highlight_mouse = highlight_mouse
-    self._user_data_dir = user_data_dir
     self._initialized = False
+    self._remote_ws_endpoint = remote_ws_endpoint  
 
   @override
   async def initialize(self):
-    if self._initialized: 
-      return 
-    logger.info("Creating Playwright session")
-    self._playwright = await async_playwright().start()
-
-    # Define common arguments for both launch types
-    browser_args = [
-        "--disable-blink-features=AutomationControlled",
-        "--disable-gpu",
-    ]
-
-    if self._user_data_dir:
-      logger.info(
-          f"Starting playwright with persistent profile: {self._user_data_dir}"
+      if self._initialized: 
+          return 
+      
+      logger.info("Connecting to remote Playwright browser in Docker")
+      self._playwright = await async_playwright().start()
+      
+      # Connect to the remote browser instead of launching
+      self._browser = await self._playwright.chromium.connect(
+          self._remote_ws_endpoint
       )
-      # Use a persistent context if user_data_dir is provided
-      self._context = await self._playwright.chromium.launch_persistent_context(
-          self._user_data_dir,
-          headless=False,
-          args=browser_args,
+      
+      # Get existing context or create new one
+      contexts = self._browser.contexts
+      if contexts:
+          self._context = contexts[0]
+      else:
+          self._context = await self._browser.new_context()
+      
+      # Get existing page or create new one
+      if self._context.pages:
+          self._page = self._context.pages[0]
+      else:
+          self._page = await self._context.new_page()
+      
+      await self._page.set_viewport_size({
+          "width": self._screen_size[0],
+          "height": self._screen_size[1],
+      })
+      
+      termcolor.cprint(
+          f"Connected to remote playwright at {self._remote_ws_endpoint}",
+          color="green",
+          attrs=["bold"],
       )
-      self._browser = self._context.browser
-    else:
-      logger.info(
-          "Starting playwright with a temporary profile."
-      )
-      # Launch a temporary browser instance if user_data_dir is not provided
-      self._browser = await self._playwright.chromium.launch(
-          args=browser_args,
-          headless=False,
-      )
-      self._context = await self._browser.new_context()
-
-    if not self._context.pages:
-      self._page = await self._context.new_page()
+      
+      self._initialized = True
       await self._page.goto(self._initial_url)
-    else:
-      self._page = self._context.pages[0]  # Use existing page if any
-
-    await self._page.set_viewport_size({
-        "width": self._screen_size[0],
-        "height": self._screen_size[1],
-    })
-    termcolor.cprint(
-        f"Started local playwright.",
-        color="green",
-        attrs=["bold"],
-    )
-    # set self._initialized to True
-    self._initialized = True
-    await self._page.goto(self._initial_url)
-    await self._page.wait_for_load_state()
+      await self._page.wait_for_load_state()
 
   @override
   async def environment(self):

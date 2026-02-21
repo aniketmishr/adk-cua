@@ -1,16 +1,16 @@
 from opik.integrations.adk import OpikTracer
 from google.genai.types import Part, FileData, Content
 import opik
-from dotenv import load_dotenv
+from config import settings
 from utils import png_bytes_to_data_uri
-import os
+from opik import set_tracing_active
 
-load_dotenv()
+set_tracing_active(not(bool(settings.opik.track_disable)))
 
-# Configure with your Opik API key
-opik.configure(
-    api_key=os.getenv("OPIK_API_KEY")
-)
+if not settings.opik.track_disable:
+    opik.configure(
+        api_key=settings.opik.api_key.get_secret_value()
+    )
 
 class CustomOpikTracer(OpikTracer):
     def before_model_callback(self, callback_context, llm_request, *args, **kwargs):

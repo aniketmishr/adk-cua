@@ -2,14 +2,12 @@ import asyncio
 import json
 import litellm
 from typing import Tuple
-from omni.client import parse_ui_from_image_bytes
-from dotenv import load_dotenv
+from omniparserclient import parse_ui_from_image_bytes
 from opik import track, opik_context
 from utils import png_bytes_to_data_uri
+from config import settings
 
-load_dotenv()
-
-MODEL: str = "openai/gpt-5-mini"
+MODEL: str = settings.grounding.model
 
 GROUNDING_SYSTEM_PROMPT: str = """
 You are a Computer Use Agent.
@@ -119,6 +117,7 @@ async def locate_visual_element(
 async def call_grounding_model(annotated_image_b64:str, ui_elements:list[dict], visual_description:str):
     response = await litellm.acompletion(
             model=MODEL,
+            api_key=settings.grounding.api_key.get_secret_value(),
             messages=[
                 {
                     "role": "system",
